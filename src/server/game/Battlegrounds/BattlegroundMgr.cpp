@@ -299,7 +299,7 @@ void BattlegroundMgr::BuildBattlegroundStatusPacket(WorldPacket* data, Battlegro
             data->WriteBit(bgGuid[7]);
             data->WriteBit(bgGuid[1]);
             data->WriteBit(playerGuid[5]);
-            data->WriteBit(player->GetBGTeam() == HORDE ? 0 : 1);
+            data->WriteBit(player->GetTeam() == HORDE ? 0 : 1);
             data->WriteBit(bgGuid[0]);
             data->WriteBit(playerGuid[1]);
             data->WriteBit(bgGuid[3]);
@@ -399,7 +399,7 @@ void BattlegroundMgr::BuildPvpLogDataPacket(WorldPacket* data, Battleground* bg)
         data->WriteBit(playerGUID[5]);
         data->WriteBit(playerGUID[1]);
         data->WriteBit(playerGUID[6]);
-        data->WriteBit(player->GetBGTeam() == HORDE ? 0 : 1);
+        data->WriteBit(player->GetTeam() == HORDE ? 0 : 1);
         data->WriteBit(playerGUID[7]);
 
         buff << uint32(itr->second->HealingDone);             // healing done
@@ -1190,7 +1190,7 @@ void BattlegroundMgr::SendToBattleground(Player* player, uint32 instanceId, Batt
     {
         float x, y, z, O;
         uint32 mapid = bg->GetMapId();
-        uint32 team = player->GetBGTeam();
+        uint32 team = player->GetTeam();
 
         bg->GetTeamStartLoc(team, x, y, z, O);
         TC_LOG_DEBUG(LOG_FILTER_BATTLEGROUND, "BattlegroundMgr::SendToBattleground: Sending %s to map %u, X %f, Y %f, Z %f, O %f (bgType %u)", player->GetName().c_str(), mapid, x, y, z, O, bgTypeId);

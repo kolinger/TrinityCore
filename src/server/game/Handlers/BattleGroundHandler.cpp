@@ -35,6 +35,8 @@
 #include "DisableMgr.h"
 #include "Group.h"
 
+#include "Cfbg/Cfbg.h"
+
 void WorldSession::HandleBattlemasterHelloOpcode(WorldPacket& recvData)
 {
     uint64 guid;
