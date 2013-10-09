@@ -37,41 +37,41 @@ public:
     {
         static ChatCommand accountSetSecTable[] =
         {
-            { "regmail",        rbac::RBAC_PERM_COMMAND_ACCOUNT_SET_SEC_REGMAIL, true,  &HandleAccountSetRegEmailCommand,  "", NULL },
-            { "email",          rbac::RBAC_PERM_COMMAND_ACCOUNT_SET_SEC_EMAIL,   true,  &HandleAccountSetEmailCommand,     "", NULL },
+            { "regmail",        SEC_MODERATOR,		true,  &HandleAccountSetRegEmailCommand,  "", NULL },
+            { "email",          SEC_MODERATOR,		true,  &HandleAccountSetEmailCommand,     "", NULL },
             { NULL,             0,                                         false, NULL,                              "", NULL }
         };
         static ChatCommand accountSetCommandTable[] =
         {
-            { "addon",          rbac::RBAC_PERM_COMMAND_ACCOUNT_SET_ADDON,       true,  &HandleAccountSetAddonCommand,     "", NULL },
-            { "sec",            rbac::RBAC_PERM_COMMAND_ACCOUNT_SET_SEC,         true,  NULL,                "", accountSetSecTable },
-            { "gmlevel",        rbac::RBAC_PERM_COMMAND_ACCOUNT_SET_GMLEVEL,     true,  &HandleAccountSetGmLevelCommand,   "", NULL },
-            { "password",       rbac::RBAC_PERM_COMMAND_ACCOUNT_SET_PASSWORD,    true,  &HandleAccountSetPasswordCommand,  "", NULL },
+            { "addon",          SEC_MODERATOR,		true,  &HandleAccountSetAddonCommand,     "", NULL },
+            { "sec",            SEC_MODERATOR,		true,  NULL,                "", accountSetSecTable },
+            { "gmlevel",        SEC_MODERATOR,		true,  &HandleAccountSetGmLevelCommand,   "", NULL },
+            { "password",       SEC_MODERATOR,		true,  &HandleAccountSetPasswordCommand,  "", NULL },
             { NULL,             0,                                         false, NULL,                              "", NULL }
         };
         static ChatCommand accountLockCommandTable[] =
         {
-            { "country",        rbac::RBAC_PERM_COMMAND_ACCOUNT_LOCK_COUNTRY,    true,  &HandleAccountLockCountryCommand,  "", NULL },
-            { "ip",             rbac::RBAC_PERM_COMMAND_ACCOUNT_LOCK_IP,         true,  &HandleAccountLockIpCommand,       "", NULL },
+            { "country",        SEC_MODERATOR,		true,  &HandleAccountLockCountryCommand,  "", NULL },
+            { "ip",             SEC_MODERATOR,      true,  &HandleAccountLockIpCommand,       "", NULL },
             { NULL,             0,                                         false, NULL,                              "", NULL }
         };
         static ChatCommand accountCommandTable[] =
         {
-            { "addon",          rbac::RBAC_PERM_COMMAND_ACCOUNT_ADDON,           false, &HandleAccountAddonCommand,        "", NULL },
-            { "create",         rbac::RBAC_PERM_COMMAND_ACCOUNT_CREATE,          true,  &HandleAccountCreateCommand,       "", NULL },
-            { "delete",         rbac::RBAC_PERM_COMMAND_ACCOUNT_DELETE,          true,  &HandleAccountDeleteCommand,       "", NULL },
-            { "email",          rbac::RBAC_PERM_COMMAND_ACCOUNT_EMAIL,           false, &HandleAccountEmailCommand,        "", NULL },
-            { "onlinelist",     rbac::RBAC_PERM_COMMAND_ACCOUNT_ONLINE_LIST,     true,  &HandleAccountOnlineListCommand,   "", NULL },
-            { "lock",           rbac::RBAC_PERM_COMMAND_ACCOUNT_LOCK,            false, NULL,           "", accountLockCommandTable },
-            { "set",            rbac::RBAC_PERM_COMMAND_ACCOUNT_SET,             true,  NULL,            "", accountSetCommandTable },
-            { "password",       rbac::RBAC_PERM_COMMAND_ACCOUNT_PASSWORD,        false, &HandleAccountPasswordCommand,     "", NULL },
-            { "",               rbac::RBAC_PERM_COMMAND_ACCOUNT,                 false, &HandleAccountCommand,             "", NULL },
-            { NULL,             0,                                         false, NULL,                              "", NULL }
+            { "addon",          SEC_MODERATOR,      false, &HandleAccountAddonCommand,        "", NULL },
+            { "create",         SEC_MODERATOR,      true,  &HandleAccountCreateCommand,       "", NULL },
+            { "delete",         SEC_MODERATOR,      true,  &HandleAccountDeleteCommand,       "", NULL },
+            { "email",          SEC_MODERATOR,      false, &HandleAccountEmailCommand,        "", NULL },
+            { "onlinelist",     SEC_MODERATOR,		true,  &HandleAccountOnlineListCommand,   "", NULL },
+            { "lock",           SEC_MODERATOR,      false, NULL,           "", accountLockCommandTable },
+            { "set",            SEC_MODERATOR,      true,  NULL,            "", accountSetCommandTable },
+            { "password",       SEC_MODERATOR,      false, &HandleAccountPasswordCommand,     "", NULL },
+            { "",               SEC_MODERATOR,      false, &HandleAccountCommand,             "", NULL },
+            { NULL,             0,                  false, NULL,                              "", NULL }
         };
         static ChatCommand commandTable[] =
         {
-            { "account",        rbac::RBAC_PERM_COMMAND_ACCOUNT,                 true,  NULL,              "",  accountCommandTable },
-            { NULL,             0,                                         false, NULL,                              "", NULL }
+            { "account",        SEC_MODERATOR,		true,  NULL,              "",  accountCommandTable },
+            { NULL,             0,                  false, NULL,                              "", NULL }
         };
         return commandTable;
     }
@@ -710,7 +710,7 @@ public:
             return false;
         }
 
-        rbac::RBACData* rbac = isAccountNameGiven ? NULL : handler->getSelectedPlayer()->GetSession()->GetRBACData();
+        RBACData* rbac = isAccountNameGiven ? NULL : handler->getSelectedPlayer()->GetSession()->GetRBACData();
         sAccountMgr->UpdateAccountAccess(rbac, targetAccountId, uint8(gm), gmRealmID);
 
         handler->PSendSysMessage(LANG_YOU_CHANGE_SECURITY, targetAccountName.c_str(), gm);

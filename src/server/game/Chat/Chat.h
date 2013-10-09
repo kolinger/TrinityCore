@@ -86,7 +86,6 @@ class ChatHandler
 
         // function with different implementation for chat/console
         virtual bool isAvailable(ChatCommand const& cmd) const;
-        virtual bool HasPermission(uint32 permission) const { return m_session->HasPermission(permission); }
         virtual std::string GetNameLink() const { return GetNameLink(m_session->GetPlayer()); }
         virtual bool needReportToTarget(Player* chr) const;
         virtual LocaleConstant GetSessionDbcLocale() const;

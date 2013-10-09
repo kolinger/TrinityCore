@@ -40,17 +40,17 @@ public:
     {
         static ChatCommand gmCommandTable[] =
         {
-            { "chat",    rbac::RBAC_PERM_COMMAND_GM_CHAT,    false, &HandleGMChatCommand,       "", NULL },
-            { "fly",     rbac::RBAC_PERM_COMMAND_GM_FLY,     false, &HandleGMFlyCommand,        "", NULL },
-            { "ingame",  rbac::RBAC_PERM_COMMAND_GM_INGAME,   true, &HandleGMListIngameCommand, "", NULL },
-            { "list",    rbac::RBAC_PERM_COMMAND_GM_LIST,     true, &HandleGMListFullCommand,   "", NULL },
-            { "visible", rbac::RBAC_PERM_COMMAND_GM_VISIBLE, false, &HandleGMVisibleCommand,    "", NULL },
-            { "",        rbac::RBAC_PERM_COMMAND_GM,         false, &HandleGMCommand,           "", NULL },
+            { "chat",    RBAC_PERM_COMMAND_GM_CHAT,    false, &HandleGMChatCommand,       "", NULL },
+            { "fly",     RBAC_PERM_COMMAND_GM_FLY,     false, &HandleGMFlyCommand,        "", NULL },
+            { "ingame",  RBAC_PERM_COMMAND_GM_INGAME,   true, &HandleGMListIngameCommand, "", NULL },
+            { "list",    RBAC_PERM_COMMAND_GM_LIST,     true, &HandleGMListFullCommand,   "", NULL },
+            { "visible", RBAC_PERM_COMMAND_GM_VISIBLE, false, &HandleGMVisibleCommand,    "", NULL },
+            { "",        RBAC_PERM_COMMAND_GM,         false, &HandleGMCommand,           "", NULL },
             { NULL,      0,                            false, NULL,                       "", NULL }
         };
         static ChatCommand commandTable[] =
         {
-            { "gm", rbac::RBAC_PERM_COMMAND_GM, false, NULL, "", gmCommandTable },
+            { "gm", RBAC_PERM_COMMAND_GM, false, NULL, "", gmCommandTable },
             { NULL, 0,                    false, NULL, "", NULL }
         };
         return commandTable;
