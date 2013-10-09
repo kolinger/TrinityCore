@@ -252,7 +252,7 @@ void Channel::LeaveChannel(Player* player, bool send)
 
     playersStore.erase(guid);
 
-    if (_announce &&)
+    if (_announce)
     {
         WorldPacket data;
         MakeLeft(&data, guid);

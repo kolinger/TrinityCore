@@ -29,7 +29,6 @@
 #include "LFGQueue.h"
 #include "Group.h"
 #include "Player.h"
-#include "RBAC.h"
 #include "GroupMgr.h"
 #include "GameEventMgr.h"
 #include "WorldSession.h"

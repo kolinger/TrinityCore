@@ -3204,11 +3204,3 @@ CharacterNameData const* World::GetCharacterNameData(uint32 guid) const
         return NULL;
 }
 
-void World::ReloadRBAC()
-{
-    // Passive reload, we mark the data as invalidated and next time a permission is checked it will be reloaded
-    TC_LOG_INFO(LOG_FILTER_RBAC, "World::ReloadRBAC()");
-    for (SessionMap::const_iterator itr = m_sessions.begin(); itr != m_sessions.end(); ++itr)
-        if (WorldSession* session = itr->second)
-            session->InvalidateRBACData();
-}

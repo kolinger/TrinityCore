@@ -256,13 +256,11 @@ void WorldSession::HandleSendMail(WorldPacket& recvData)
             for (uint8 i = 0; i < items_count; ++i)
             {
                 Item* item = items[i];
-                if (log)
-                {
-                    sLog->outCommand(GetAccountId(), "GM %s (GUID: %u) (Account: %u) mail item: %s (Entry: %u Count: %u) "
-                        "to player: %s (GUID: %u) (Account: %u)", GetPlayerName().c_str(), GetGuidLow(), GetAccountId(),
-                        item->GetTemplate()->Name1.c_str(), item->GetEntry(), item->GetCount(),
-                        receiverName.c_str(), GUID_LOPART(receiverGuid), receiverAccountId);
-                }
+
+                sLog->outCommand(GetAccountId(), "GM %s (GUID: %u) (Account: %u) mail item: %s (Entry: %u Count: %u) "
+                    "to player: %s (GUID: %u) (Account: %u)", GetPlayerName().c_str(), GetGuidLow(), GetAccountId(),
+                    item->GetTemplate()->Name1.c_str(), item->GetEntry(), item->GetCount(),
+                    receiverName.c_str(), GUID_LOPART(receiverGuid), receiverAccountId);
 
                 item->SetNotRefundable(GetPlayer()); // makes the item no longer refundable
                 player->MoveItemFromInventory(items[i]->GetBagSlot(), item->GetSlot(), true);

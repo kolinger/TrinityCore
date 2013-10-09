@@ -122,7 +122,7 @@ const char *ChatHandler::GetTrinityString(int32 entry) const
 
 bool ChatHandler::isAvailable(ChatCommand const& cmd) const
 {
-    return HasPermission(cmd.Permission);
+    return m_session->GetSecurity() >= cmd.Permission;
 }
 
 bool ChatHandler::HasLowerSecurity(Player* target, uint64 guid, bool strong)
