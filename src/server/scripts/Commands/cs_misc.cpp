@@ -560,7 +560,7 @@ public:
 
         if (target)
         {
-            target->ResurrectPlayer(target->GetSession()->HasPermission(rbac::RBAC_PERM_RESURRECT_WITH_FULL_HPS) ? 1.0f : 0.5f);
+            target->ResurrectPlayer(1.f);
             target->SpawnCorpseBones();
             target->SaveToDB();
         }
@@ -763,7 +763,7 @@ public:
         Player* player = handler->GetSession()->GetPlayer();
 
         // save GM account without delay and output message
-        if (handler->GetSession()->HasPermission(rbac::RBAC_PERM_COMMANDS_SAVE_WITHOUT_DELAY))
+        if (handler->GetSession()->GetSecurity() > SEC_PLAYER)
         {
             if (Player* target = handler->getSelectedPlayer())
                 target->SaveToDB();
@@ -821,7 +821,7 @@ public:
     static bool HandleUnstuckCommand(ChatHandler* handler, char const* args)
     {
         // No args required for players
-        if (handler->GetSession() && !handler->GetSession()->HasPermission(rbac::RBAC_PERM_COMMANDS_USE_UNSTUCK_WITH_ARGS))
+        if (handler->GetSession())
         {
             // 7355: "Stuck"
             if (Player* player = handler->GetSession()->GetPlayer())
@@ -1545,8 +1545,7 @@ public:
             security      = fields[1].GetUInt8();
 
             // Only fetch these fields if commander has sufficient rights)
-            if (handler->HasPermission(rbac::RBAC_PERM_COMMANDS_PINFO_CHECK_PERSONAL_DATA) && // RBAC Perm. 48, Role 39
-               (!handler->GetSession() || handler->GetSession()->GetSecurity() >= AccountTypes(security)))
+            if (!handler->GetSession() || handler->GetSession()->GetSecurity() >= AccountTypes(security))
             {
                 eMail     = fields[2].GetString();
                 regMail   = fields[3].GetString();

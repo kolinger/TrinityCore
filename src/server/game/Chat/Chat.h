@@ -21,7 +21,6 @@
 
 #include "SharedDefines.h"
 #include "WorldSession.h"
-#include "RBAC.h"
 
 #include <vector>
 

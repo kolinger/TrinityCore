@@ -1184,45 +1184,6 @@ void WorldSession::InitWarden(BigNumber* k, std::string const& os)
     }
 }
 
-void WorldSession::LoadPermissions()
-{
-    uint32 id = GetAccountId();
-    std::string name;
-    AccountMgr::GetName(id, name);
-    uint8 secLevel = GetSecurity();
-
-    _RBACData = new rbac::RBACData(id, name, realmID, secLevel);
-    _RBACData->LoadFromDB();
-
-    TC_LOG_DEBUG(LOG_FILTER_RBAC, "WorldSession::LoadPermissions [AccountId: %u, Name: %s, realmId: %d, secLevel: %u]",
-                   id, name.c_str(), realmID, secLevel);
-}
-
-rbac::RBACData* WorldSession::GetRBACData()
-{
-    return _RBACData;
-}
-
-bool WorldSession::HasPermission(uint32 permission)
-{
-    if (!_RBACData)
-        LoadPermissions();
-
-    bool hasPermission = _RBACData->HasPermission(permission);
-    TC_LOG_DEBUG(LOG_FILTER_RBAC, "WorldSession::HasPermission [AccountId: %u, Name: %s, realmId: %d]",
-                   _RBACData->GetId(), _RBACData->GetName().c_str(), realmID);
-
-    return hasPermission;
-}
-
-void WorldSession::InvalidateRBACData()
-{
-    TC_LOG_DEBUG(LOG_FILTER_RBAC, "WorldSession::Invalidaterbac::RBACData [AccountId: %u, Name: %s, realmId: %d]",
-                   _RBACData->GetId(), _RBACData->GetName().c_str(), realmID);
-    delete _RBACData;
-    _RBACData = NULL;
-}
-
 bool WorldSession::DosProtection::EvaluateOpcode(WorldPacket& p) const
 {
     if (IsOpcodeAllowed(p.GetOpcode()))

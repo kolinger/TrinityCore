@@ -19,7 +19,6 @@
 #ifndef _ACCMGR_H
 #define _ACCMGR_H
 
-#include "RBAC.h"
 #include <ace/Singleton.h>
 
 enum AccountOpResult
@@ -37,17 +36,10 @@ enum PasswordChangeSecurity
 {
     PW_NONE,
     PW_EMAIL,
-    PW_RBAC
 };
 
 #define MAX_ACCOUNT_STR 16
 #define MAX_EMAIL_STR 64
-
-namespace rbac
-{
-typedef std::map<uint32, rbac::RBACPermission*> RBACPermissionsContainer;
-typedef std::map<uint8, rbac::RBACPermissionContainer> RBACDefaultPermissionsContainer;
-}
 
 class AccountMgr
 {
@@ -80,19 +72,6 @@ class AccountMgr
         static bool IsAdminAccount(uint32 gmlevel);
         static bool IsConsoleAccount(uint32 gmlevel);
         static bool HasPermission(uint32 accountId, uint32 permission, uint32 realmId);
-
-        void UpdateAccountAccess(rbac::RBACData* rbac, uint32 accountId, uint8 securityLevel, int32 realmId);
-
-        void LoadRBAC();
-        rbac::RBACPermission const* GetRBACPermission(uint32 permission) const;
-
-        rbac::RBACPermissionsContainer const& GetRBACPermissionList() const { return _permissions; }
-        rbac::RBACPermissionContainer const& GetRBACDefaultPermissions(uint8 secLevel);
-
-    private:
-        void ClearRBAC();
-        rbac::RBACPermissionsContainer _permissions;
-        rbac::RBACDefaultPermissionsContainer _defaultPermissions;
 };
 
 #define sAccountMgr ACE_Singleton<AccountMgr, ACE_Null_Mutex>::instance()

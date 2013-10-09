@@ -670,8 +670,7 @@ Player::Player(WorldSession* session): Unit(true)
     //m_pad = 0;
 
     // players always accept
-    if (!GetSession()->HasPermission(rbac::RBAC_PERM_CAN_FILTER_WHISPERS))
-        SetAcceptWhispers(true);
+    SetAcceptWhispers(true);
 
     m_lootGuid = 0;
 
@@ -1019,13 +1018,6 @@ bool Player::Create(uint32 guidlow, CharacterCreateInfo* createInfo)
     uint32 start_level = getClass() != CLASS_DEATH_KNIGHT
         ? sWorld->getIntConfig(CONFIG_START_PLAYER_LEVEL)
         : sWorld->getIntConfig(CONFIG_START_HEROIC_PLAYER_LEVEL);
-
-    if (m_session->HasPermission(rbac::RBAC_PERM_USE_START_GM_LEVEL))
-    {
-        uint32 gm_level = sWorld->getIntConfig(CONFIG_START_GM_LEVEL);
-        if (gm_level > start_level)
-            start_level = gm_level;
-    }
 
     SetUInt32Value(UNIT_FIELD_LEVEL, start_level);
 
@@ -2092,7 +2084,7 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
         return false;
     }
 
-    if (!GetSession()->HasPermission(rbac::RBAC_PERM_SKIP_CHECK_DISABLE_MAP) && DisableMgr::IsDisabledFor(DISABLE_TYPE_MAP, mapid, this))
+    if (DisableMgr::IsDisabledFor(DISABLE_TYPE_MAP, mapid, this))
     {
         TC_LOG_ERROR(LOG_FILTER_MAPS, "Player (GUID: %u, name: %s) tried to enter a forbidden map %u", GetGUIDLow(), GetName().c_str(), mapid);
         SendTransferAborted(mapid, TRANSFER_ABORT_MAP_NOT_ALLOWED);
@@ -3149,14 +3141,8 @@ void Player::InitTalentForLevel()
 
         // if used more that have then reset
         if (m_usedTalentCount > talentPointsForLevel)
-        {
-            if (!GetSession()->HasPermission(rbac::RBAC_PERM_SKIP_CHECK_MORE_TALENTS_THAN_ALLOWED))
-                resetTalents(true);
-            else
-                SetFreeTalentPoints(0);
-        }
-        // else update amount of free points
-        else
+            resetTalents(true);
+        else // else update amount of free points
             SetFreeTalentPoints(talentPointsForLevel - m_usedTalentCount);
     }
 
@@ -16972,9 +16958,7 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
     m_name = fields[2].GetString();
 
     // check name limitations
-    if (ObjectMgr::CheckPlayerName(m_name) != CHAR_NAME_SUCCESS ||
-        (!GetSession()->HasPermission(rbac::RBAC_PERM_SKIP_CHECK_CHARACTER_CREATION_RESERVEDNAME) &&
-         sObjectMgr->IsReservedName(m_name)))
+    if (ObjectMgr::CheckPlayerName(m_name) != CHAR_NAME_SUCCESS || sObjectMgr->IsReservedName(m_name))
     {
         PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_ADD_AT_LOGIN_FLAG);
         stmt->setUInt16(0, uint16(AT_LOGIN_RENAME));
@@ -17508,51 +17492,48 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
     outDebugValues();
 
     // GM state
-    if (GetSession()->HasPermission(rbac::RBAC_PERM_RESTORE_SAVED_GM_STATE))
+    switch (sWorld->getIntConfig(CONFIG_GM_LOGIN_STATE))
     {
-        switch (sWorld->getIntConfig(CONFIG_GM_LOGIN_STATE))
-        {
-            default:
-            case 0:                      break;             // disable
-            case 1: SetGameMaster(true); break;             // enable
-            case 2:                                         // save state
-                if (extraflags & PLAYER_EXTRA_GM_ON)
-                    SetGameMaster(true);
-                break;
-        }
+        default:
+        case 0:                      break;             // disable
+        case 1: SetGameMaster(true); break;             // enable
+        case 2:                                         // save state
+            if (extraflags & PLAYER_EXTRA_GM_ON)
+                SetGameMaster(true);
+            break;
+    }
 
-        switch (sWorld->getIntConfig(CONFIG_GM_VISIBLE_STATE))
-        {
-            default:
-            case 0: SetGMVisible(false); break;             // invisible
-            case 1:                      break;             // visible
-            case 2:                                         // save state
-                if (extraflags & PLAYER_EXTRA_GM_INVISIBLE)
-                    SetGMVisible(false);
-                break;
-        }
+    switch (sWorld->getIntConfig(CONFIG_GM_VISIBLE_STATE))
+    {
+        default:
+        case 0: SetGMVisible(false); break;             // invisible
+        case 1:                      break;             // visible
+        case 2:                                         // save state
+            if (extraflags & PLAYER_EXTRA_GM_INVISIBLE)
+                SetGMVisible(false);
+            break;
+    }
 
-        switch (sWorld->getIntConfig(CONFIG_GM_CHAT))
-        {
-            default:
-            case 0:                  break;                 // disable
-            case 1: SetGMChat(true); break;                 // enable
-            case 2:                                         // save state
-                if (extraflags & PLAYER_EXTRA_GM_CHAT)
-                    SetGMChat(true);
-                break;
-        }
+    switch (sWorld->getIntConfig(CONFIG_GM_CHAT))
+    {
+        default:
+        case 0:                  break;                 // disable
+        case 1: SetGMChat(true); break;                 // enable
+        case 2:                                         // save state
+            if (extraflags & PLAYER_EXTRA_GM_CHAT)
+                SetGMChat(true);
+            break;
+    }
 
-        switch (sWorld->getIntConfig(CONFIG_GM_WHISPERING_TO))
-        {
-            default:
-            case 0:                          break;         // disable
-            case 1: SetAcceptWhispers(true); break;         // enable
-            case 2:                                         // save state
-                if (extraflags & PLAYER_EXTRA_ACCEPT_WHISPERS)
-                    SetAcceptWhispers(true);
-                break;
-        }
+    switch (sWorld->getIntConfig(CONFIG_GM_WHISPERING_TO))
+    {
+        default:
+        case 0:                          break;         // disable
+        case 1: SetAcceptWhispers(true); break;         // enable
+        case 2:                                         // save state
+            if (extraflags & PLAYER_EXTRA_ACCEPT_WHISPERS)
+                SetAcceptWhispers(true);
+            break;
     }
 
     // RaF stuff.
@@ -19841,10 +19822,6 @@ void Player::outDebugValues() const
 
 void Player::UpdateSpeakTime()
 {
-    // ignore chat spam protection for GMs in any mode
-    if (GetSession()->HasPermission(rbac::RBAC_PERM_SKIP_CHECK_CHAT_SPAM))
-        return;
-
     time_t current = time (NULL);
     if (m_speakTime > current)
     {
@@ -20298,7 +20275,7 @@ void Player::TextEmote(const std::string& text)
 
     WorldPacket data(SMSG_MESSAGECHAT, 200);
     BuildPlayerChat(&data, CHAT_MSG_EMOTE, _text, LANG_UNIVERSAL);
-    SendMessageToSetInRange(&data, sWorld->getFloatConfig(CONFIG_LISTEN_RANGE_TEXTEMOTE), true, !GetSession()->HasPermission(rbac::RBAC_PERM_TWO_SIDE_INTERACTION_CHAT));
+    SendMessageToSetInRange(&data, sWorld->getFloatConfig(CONFIG_LISTEN_RANGE_TEXTEMOTE), true, true);
 }
 
 void Player::Whisper(const std::string& text, uint32 language, uint64 receiver)
@@ -22036,15 +22013,6 @@ bool Player::CanJoinToBattleground(Battleground const* bg) const
 {
     // check Deserter debuff
     if (HasAura(26013))
-        return false;
-
-    if (bg->isArena() && !GetSession()->HasPermission(rbac::RBAC_PERM_JOIN_ARENAS))
-        return false;
-
-    if (bg->IsRandom() && !GetSession()->HasPermission(rbac::RBAC_PERM_JOIN_RANDOM_BG))
-        return false;
-
-    if (!GetSession()->HasPermission(rbac::RBAC_PERM_JOIN_NORMAL_BG))
         return false;
 
     return true;

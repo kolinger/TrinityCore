@@ -104,12 +104,10 @@ void AuctionHouseMgr::SendAuctionWonMail(AuctionEntry* auction, SQLTransaction& 
     {
         bidderAccId = bidder->GetSession()->GetAccountId();
         bidderName = bidder->GetName();
-        logGmTrade = bidder->GetSession()->HasPermission(rbac::RBAC_PERM_LOG_GM_TRADE);
     }
     else
     {
         bidderAccId = sObjectMgr->GetPlayerAccountIdByGUID(bidderGuid);
-        logGmTrade = AccountMgr::HasPermission(bidderAccId, rbac::RBAC_PERM_LOG_GM_TRADE, realmID);
 
         if (logGmTrade && !sObjectMgr->GetPlayerNameByGUID(bidderGuid, bidderName))
             bidderName = sObjectMgr->GetTrinityStringForDBCLocale(LANG_UNKNOWN);

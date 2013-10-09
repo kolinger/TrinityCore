@@ -191,7 +191,7 @@ void Channel::JoinChannel(Player* player, std::string const& pass)
 
     player->JoinedChannel(this);
 
-    if (_announce && !player->GetSession()->HasPermission(rbac::RBAC_PERM_SILENTLY_JOIN_CHANNEL))
+    if (_announce)
     {
         WorldPacket data;
         MakeJoined(&data, guid);
@@ -252,7 +252,7 @@ void Channel::LeaveChannel(Player* player, bool send)
 
     playersStore.erase(guid);
 
-    if (_announce && !player->GetSession()->HasPermission(rbac::RBAC_PERM_SILENTLY_JOIN_CHANNEL))
+    if (_announce &&)
     {
         WorldPacket data;
         MakeLeft(&data, guid);
@@ -288,7 +288,7 @@ void Channel::KickOrBan(Player const* player, std::string const& badname, bool b
         return;
     }
 
-    if (!playersStore[good].IsModerator() && !player->GetSession()->HasPermission(rbac::RBAC_PERM_CHANGE_CHANNEL_NOT_MODERATOR))
+    if (!playersStore[good].IsModerator())
     {
         WorldPacket data;
         MakeNotModerator(&data);
@@ -308,7 +308,7 @@ void Channel::KickOrBan(Player const* player, std::string const& badname, bool b
 
     bool changeowner = _ownerGUID == victim;
 
-    if (!player->GetSession()->HasPermission(rbac::RBAC_PERM_CHANGE_CHANNEL_NOT_MODERATOR) && changeowner && good != _ownerGUID)
+    if (changeowner && good != _ownerGUID)
     {
         WorldPacket data;
         MakeNotOwner(&data);
@@ -320,19 +320,6 @@ void Channel::KickOrBan(Player const* player, std::string const& badname, bool b
     {
         bannedStore.insert(victim);
         UpdateChannelInDB();
-
-        if (!player->GetSession()->HasPermission(rbac::RBAC_PERM_SILENTLY_JOIN_CHANNEL))
-        {
-            WorldPacket data;
-            MakePlayerBanned(&data, victim, good);
-            SendToAll(&data);
-        }
-    }
-    else if (!player->GetSession()->HasPermission(rbac::RBAC_PERM_SILENTLY_JOIN_CHANNEL))
-    {
-        WorldPacket data;
-        MakePlayerKicked(&data, victim, good);
-        SendToAll(&data);
     }
 
     playersStore.erase(victim);
@@ -358,7 +345,7 @@ void Channel::UnBan(Player const* player, std::string const& badname)
         return;
     }
 
-    if (!playersStore[good].IsModerator() && !player->GetSession()->HasPermission(rbac::RBAC_PERM_CHANGE_CHANNEL_NOT_MODERATOR))
+    if (!playersStore[good].IsModerator())
     {
         WorldPacket data;
         MakeNotModerator(&data);
@@ -399,7 +386,7 @@ void Channel::Password(Player const* player, std::string const& pass)
         return;
     }
 
-    if (!playersStore[guid].IsModerator() && !player->GetSession()->HasPermission(rbac::RBAC_PERM_CHANGE_CHANNEL_NOT_MODERATOR))
+    if (!playersStore[guid].IsModerator())
     {
         WorldPacket data;
         MakeNotModerator(&data);
@@ -428,7 +415,7 @@ void Channel::SetMode(Player const* player, std::string const& p2n, bool mod, bo
         return;
     }
 
-    if (!playersStore[guid].IsModerator() && !player->GetSession()->HasPermission(rbac::RBAC_PERM_CHANGE_CHANNEL_NOT_MODERATOR))
+    if (!playersStore[guid].IsModerator())
     {
         WorldPacket data;
         MakeNotModerator(&data);
@@ -442,10 +429,7 @@ void Channel::SetMode(Player const* player, std::string const& p2n, bool mod, bo
     Player* newp = sObjectAccessor->FindPlayerByName(p2n);
     uint64 victim = newp ? newp->GetGUID() : 0;
 
-    if (!victim || !IsOn(victim) ||
-        (player->GetTeam() != newp->GetTeam() &&
-        (!player->GetSession()->HasPermission(rbac::RBAC_PERM_TWO_SIDE_INTERACTION_CHANNEL) ||
-        !newp->GetSession()->HasPermission(rbac::RBAC_PERM_TWO_SIDE_INTERACTION_CHANNEL))))
+    if (!victim || !IsOn(victim) || (player->GetTeam() != newp->GetTeam()))
     {
         WorldPacket data;
         MakePlayerNotFound(&data, p2n);
@@ -479,7 +463,7 @@ void Channel::SetOwner(Player const* player, std::string const& newname)
         return;
     }
 
-    if (!player->GetSession()->HasPermission(rbac::RBAC_PERM_CHANGE_CHANNEL_NOT_MODERATOR) && guid != _ownerGUID)
+    if (guid != _ownerGUID)
     {
         WorldPacket data;
         MakeNotOwner(&data);
@@ -490,10 +474,7 @@ void Channel::SetOwner(Player const* player, std::string const& newname)
     Player* newp = sObjectAccessor->FindPlayerByName(newname);
     uint64 victim = newp ? newp->GetGUID() : 0;
 
-    if (!victim || !IsOn(victim) ||
-        (player->GetTeam() != newp->GetTeam() &&
-        (!player->GetSession()->HasPermission(rbac::RBAC_PERM_TWO_SIDE_INTERACTION_CHANNEL) ||
-        !newp->GetSession()->HasPermission(rbac::RBAC_PERM_TWO_SIDE_INTERACTION_CHANNEL))))
+    if (!victim || !IsOn(victim) || (player->GetTeam() != newp->GetTeam()))
     {
         WorldPacket data;
         MakePlayerNotFound(&data, newname);
@@ -548,8 +529,7 @@ void Channel::List(Player const* player)
         // PLAYER can't see MODERATOR, GAME MASTER, ADMINISTRATOR characters
         // MODERATOR, GAME MASTER, ADMINISTRATOR can see all
         if (member &&
-            (player->GetSession()->HasPermission(rbac::RBAC_PERM_WHO_SEE_ALL_SEC_LEVELS) ||
-             member->GetSession()->GetSecurity() <= AccountTypes(gmLevelInWhoList)) &&
+            (member->GetSession()->GetSecurity() <= AccountTypes(gmLevelInWhoList)) &&
             member->IsVisibleGloballyFor(player))
         {
             data << uint64(i->first);
@@ -575,7 +555,7 @@ void Channel::Announce(Player const* player)
         return;
     }
 
-    if (!playersStore[guid].IsModerator() && !player->GetSession()->HasPermission(rbac::RBAC_PERM_CHANGE_CHANNEL_NOT_MODERATOR))
+    if (!playersStore[guid].IsModerator())
     {
         WorldPacket data;
         MakeNotModerator(&data);
@@ -667,9 +647,7 @@ void Channel::Invite(Player const* player, std::string const& newname)
         return;
     }
 
-    if (newp->GetTeam() != player->GetTeam() &&
-        (!player->GetSession()->HasPermission(rbac::RBAC_PERM_TWO_SIDE_INTERACTION_CHANNEL) ||
-        !newp->GetSession()->HasPermission(rbac::RBAC_PERM_TWO_SIDE_INTERACTION_CHANNEL)))
+    if (newp->GetTeam() != player->GetTeam())
     {
         WorldPacket data;
         MakeInviteWrongFaction(&data);

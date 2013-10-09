@@ -279,29 +279,27 @@ void WorldSession::HandleCharCreateOpcode(WorldPacket& recvData)
 
     WorldPacket data(SMSG_CHAR_CREATE, 1);                  // returned with diff.values in all cases
 
-    if (!HasPermission(rbac::RBAC_PERM_SKIP_CHECK_CHARACTER_CREATION_TEAMMASK))
+
+    if (uint32 mask = sWorld->getIntConfig(CONFIG_CHARACTER_CREATING_DISABLED))
     {
-        if (uint32 mask = sWorld->getIntConfig(CONFIG_CHARACTER_CREATING_DISABLED))
+        bool disabled = false;
+
+        uint32 team = Player::TeamForRace(race_);
+        switch (team)
         {
-            bool disabled = false;
+            case ALLIANCE:
+                disabled = mask & (1 << 0);
+                break;
+            case HORDE:
+                disabled = mask & (1 << 1);
+                break;
+        }
 
-            uint32 team = Player::TeamForRace(race_);
-            switch (team)
-            {
-                case ALLIANCE:
-                    disabled = mask & (1 << 0);
-                    break;
-                case HORDE:
-                    disabled = mask & (1 << 1);
-                    break;
-            }
-
-            if (disabled)
-            {
-                data << uint8(CHAR_CREATE_DISABLED);
-                SendPacket(&data);
-                return;
-            }
+        if (disabled)
+        {
+            data << uint8(CHAR_CREATE_DISABLED);
+            SendPacket(&data);
+            return;
         }
     }
 
@@ -341,26 +339,20 @@ void WorldSession::HandleCharCreateOpcode(WorldPacket& recvData)
         return;
     }
 
-    if (!HasPermission(rbac::RBAC_PERM_SKIP_CHECK_CHARACTER_CREATION_RACEMASK))
-    {
-        uint32 raceMaskDisabled = sWorld->getIntConfig(CONFIG_CHARACTER_CREATING_DISABLED_RACEMASK);
-        if ((1 << (race_ - 1)) & raceMaskDisabled)
-        {
-            data << uint8(CHAR_CREATE_DISABLED);
-            SendPacket(&data);
-            return;
-        }
-    }
+	uint32 raceMaskDisabled = sWorld->getIntConfig(CONFIG_CHARACTER_CREATING_DISABLED_RACEMASK);
+	if ((1 << (race_ - 1)) & raceMaskDisabled)
+	{
+		data << uint8(CHAR_CREATE_DISABLED);
+		SendPacket(&data);
+		return;
+	}
 
-    if (!HasPermission(rbac::RBAC_PERM_SKIP_CHECK_CHARACTER_CREATION_CLASSMASK))
+    uint32 classMaskDisabled = sWorld->getIntConfig(CONFIG_CHARACTER_CREATING_DISABLED_CLASSMASK);
+    if ((1 << (class_ - 1)) & classMaskDisabled)
     {
-        uint32 classMaskDisabled = sWorld->getIntConfig(CONFIG_CHARACTER_CREATING_DISABLED_CLASSMASK);
-        if ((1 << (class_ - 1)) & classMaskDisabled)
-        {
-            data << uint8(CHAR_CREATE_DISABLED);
-            SendPacket(&data);
-            return;
-        }
+        data << uint8(CHAR_CREATE_DISABLED);
+        SendPacket(&data);
+        return;
     }
 
     // prevent character creating with invalid name
@@ -381,14 +373,14 @@ void WorldSession::HandleCharCreateOpcode(WorldPacket& recvData)
         return;
     }
 
-    if (!HasPermission(rbac::RBAC_PERM_SKIP_CHECK_CHARACTER_CREATION_RESERVEDNAME) && sObjectMgr->IsReservedName(name))
+    if (sObjectMgr->IsReservedName(name))
     {
         data << uint8(CHAR_NAME_RESERVED);
         SendPacket(&data);
         return;
     }
 
-    if (class_ == CLASS_DEATH_KNIGHT && !HasPermission(rbac::RBAC_PERM_SKIP_CHECK_CHARACTER_CREATION_HEROIC_CHARACTER))
+    if (class_ == CLASS_DEATH_KNIGHT)
     {
         // speedup check for heroic class disabled case
         uint32 heroic_free_slots = sWorld->getIntConfig(CONFIG_HEROIC_CHARACTERS_PER_REALM);
@@ -497,7 +489,7 @@ void WorldSession::HandleCharCreateCallback(PreparedQueryResult result, Characte
                 }
             }
 
-            bool allowTwoSideAccounts = !sWorld->IsPvPRealm() || HasPermission(rbac::RBAC_PERM_TWO_SIDE_CHARACTER_CREATION);
+            bool allowTwoSideAccounts = !sWorld->IsPvPRealm();
             uint32 skipCinematics = sWorld->getIntConfig(CONFIG_SKIP_CINEMATICS);
 
             _charCreateCallback.FreeResult();
@@ -521,9 +513,9 @@ void WorldSession::HandleCharCreateCallback(PreparedQueryResult result, Characte
             bool haveSameRace = false;
             uint32 heroicReqLevel = sWorld->getIntConfig(CONFIG_CHARACTER_CREATING_MIN_LEVEL_FOR_HEROIC_CHARACTER);
             bool hasHeroicReqLevel = (heroicReqLevel == 0);
-            bool allowTwoSideAccounts = !sWorld->IsPvPRealm() || HasPermission(rbac::RBAC_PERM_TWO_SIDE_CHARACTER_CREATION);
+            bool allowTwoSideAccounts = !sWorld->IsPvPRealm();
             uint32 skipCinematics = sWorld->getIntConfig(CONFIG_SKIP_CINEMATICS);
-            bool checkHeroicReqs = createInfo->Class == CLASS_DEATH_KNIGHT && !HasPermission(rbac::RBAC_PERM_SKIP_CHECK_CHARACTER_CREATION_HEROIC_CHARACTER);
+            bool checkHeroicReqs = createInfo->Class == CLASS_DEATH_KNIGHT;
 
             if (result)
             {
@@ -1140,7 +1132,7 @@ void WorldSession::HandleCharRenameOpcode(WorldPacket& recvData)
     }
 
     // check name limitations
-    if (!HasPermission(rbac::RBAC_PERM_SKIP_CHECK_CHARACTER_CREATION_RESERVEDNAME) && sObjectMgr->IsReservedName(newName))
+    if (sObjectMgr->IsReservedName(newName))
     {
         WorldPacket data(SMSG_CHAR_RENAME, 1);
         data << uint8(CHAR_NAME_RESERVED);
@@ -1465,7 +1457,7 @@ void WorldSession::HandleCharCustomize(WorldPacket& recvData)
     }
 
     // check name limitations
-    if (!HasPermission(rbac::RBAC_PERM_SKIP_CHECK_CHARACTER_CREATION_RESERVEDNAME) && sObjectMgr->IsReservedName(newName))
+    if (sObjectMgr->IsReservedName(newName))
     {
         WorldPacket data(SMSG_CHAR_CUSTOMIZE, 1);
         data << uint8(CHAR_NAME_RESERVED);
@@ -1713,17 +1705,14 @@ void WorldSession::HandleCharFactionOrRaceChange(WorldPacket& recvData)
         return;
     }
 
-    if (!HasPermission(rbac::RBAC_PERM_SKIP_CHECK_CHARACTER_CREATION_RACEMASK))
-    {
-        uint32 raceMaskDisabled = sWorld->getIntConfig(CONFIG_CHARACTER_CREATING_DISABLED_RACEMASK);
-        if ((1 << (race - 1)) & raceMaskDisabled)
-        {
-            WorldPacket data(SMSG_CHAR_FACTION_CHANGE, 1);
-            data << uint8(CHAR_CREATE_ERROR);
-            SendPacket(&data);
-            return;
-        }
-    }
+	uint32 raceMaskDisabled = sWorld->getIntConfig(CONFIG_CHARACTER_CREATING_DISABLED_RACEMASK);
+	if ((1 << (race - 1)) & raceMaskDisabled)
+	{
+		WorldPacket data(SMSG_CHAR_FACTION_CHANGE, 1);
+		data << uint8(CHAR_CREATE_ERROR);
+		SendPacket(&data);
+		return;
+	}
 
     // prevent character rename to invalid name
     if (!normalizePlayerName(newname))
@@ -1744,7 +1733,7 @@ void WorldSession::HandleCharFactionOrRaceChange(WorldPacket& recvData)
     }
 
     // check name limitations
-    if (!HasPermission(rbac::RBAC_PERM_SKIP_CHECK_CHARACTER_CREATION_RESERVEDNAME) && sObjectMgr->IsReservedName(newname))
+    if (sObjectMgr->IsReservedName(newname))
     {
         WorldPacket data(SMSG_CHAR_FACTION_CHANGE, 1);
         data << uint8(CHAR_NAME_RESERVED);
@@ -1919,19 +1908,6 @@ void WorldSession::HandleCharFactionOrRaceChange(WorldPacket& recvData)
                 if (result)
                     if (Guild* guild = sGuildMgr->GetGuildById((result->Fetch()[0]).GetUInt32()))
                         guild->DeleteMember(MAKE_NEW_GUID(lowGuid, 0, HIGHGUID_PLAYER), false, false, true);
-            }
-
-            if (!HasPermission(rbac::RBAC_PERM_TWO_SIDE_ADD_FRIEND))
-            {
-                // Delete Friend List
-                stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_CHAR_SOCIAL_BY_GUID);
-                stmt->setUInt32(0, lowGuid);
-                trans->Append(stmt);
-
-                stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_CHAR_SOCIAL_BY_FRIEND);
-                stmt->setUInt32(0, lowGuid);
-                trans->Append(stmt);
-
             }
 
             // Leave Arena Teams

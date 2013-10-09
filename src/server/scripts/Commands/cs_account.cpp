@@ -477,7 +477,7 @@ public:
         }
 
         // This compares the old, current email to the entered email - however, only...
-        if ((pwConfig == PW_EMAIL || (pwConfig == PW_RBAC && handler->HasPermission(rbac::RBAC_PERM_EMAIL_CONFIRM_FOR_PASS_CHANGE))) // ...if either PW_EMAIL or PW_RBAC with the Permission is active...
+        if ((pwConfig == PW_EMAIL) // ...if either PW_EMAIL or PW_RBAC with the Permission is active...
             && !AccountMgr::CheckEmail(handler->GetSession()->GetAccountId(), std::string(emailConfirmation))) // ... and returns false if the comparison fails.
         {
             handler->SendSysMessage(LANG_COMMAND_WRONGEMAIL);
@@ -527,34 +527,26 @@ public:
         handler->PSendSysMessage(LANG_ACCOUNT_LEVEL, uint32(gmLevel));
 
         // Security level required
-        bool hasRBAC = (handler->HasPermission(rbac::RBAC_PERM_EMAIL_CONFIRM_FOR_PASS_CHANGE) ? true : false);
         uint32 pwConfig = sWorld->getIntConfig(CONFIG_ACC_PASSCHANGESEC); // 0 - PW_NONE, 1 - PW_EMAIL, 2 - PW_RBAC
 
         handler->PSendSysMessage(LANG_ACCOUNT_SEC_TYPE, (pwConfig == PW_NONE  ? "Lowest level: No Email input required." :
                                                          pwConfig == PW_EMAIL ? "Highest level: Email input required." :
-                                                         pwConfig == PW_RBAC  ? "Special level: Your account may require email input depending on settings. That is the case if another lien is printed." :
                                                                                 "Unknown security level: Notify technician for details."));
 
-        // RBAC required display - is not displayed for console
-        if (pwConfig == PW_RBAC && handler->GetSession() && hasRBAC)
-            handler->PSendSysMessage(LANG_RBAC_EMAIL_REQUIRED);
 
         // Email display if sufficient rights
-        if (handler->HasPermission(rbac::RBAC_PERM_MAY_CHECK_OWN_EMAIL))
-        {
-            std::string emailoutput;
-            uint32 accountId = handler->GetSession()->GetAccountId();
+		std::string emailoutput;
+		uint32 accountId = handler->GetSession()->GetAccountId();
 
-            PreparedStatement* stmt = LoginDatabase.GetPreparedStatement(LOGIN_GET_EMAIL_BY_ID);
-            stmt->setUInt32(0, accountId);
-            PreparedQueryResult result = LoginDatabase.Query(stmt);
+		PreparedStatement* stmt = LoginDatabase.GetPreparedStatement(LOGIN_GET_EMAIL_BY_ID);
+		stmt->setUInt32(0, accountId);
+		PreparedQueryResult result = LoginDatabase.Query(stmt);
 
-            if (result)
-            {
-                emailoutput = (*result)[0].GetString();
-                handler->PSendSysMessage(LANG_COMMAND_EMAIL_OUTPUT, emailoutput.c_str());
-            }
-        }
+		if (result)
+		{
+			emailoutput = (*result)[0].GetString();
+			handler->PSendSysMessage(LANG_COMMAND_EMAIL_OUTPUT, emailoutput.c_str());
+		}
 
         return true;
     }

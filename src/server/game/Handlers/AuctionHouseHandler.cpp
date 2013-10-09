@@ -249,12 +249,6 @@ void WorldSession::HandleAuctionSellItem(WorldPacket& recvData)
     // Required stack size of auction matches to current item stack size, just move item to auctionhouse
     if (itemsCount == 1 && item->GetCount() == count[0])
     {
-        if (HasPermission(rbac::RBAC_PERM_LOG_GM_TRADE))
-        {
-            sLog->outCommand(GetAccountId(), "GM %s (Account: %u) create auction: %s (Entry: %u Count: %u)",
-                GetPlayerName().c_str(), GetAccountId(), item->GetTemplate()->Name1.c_str(), item->GetEntry(), item->GetCount());
-        }
-
         AH->Id = sObjectMgr->GenerateAuctionID();
         AH->itemGUIDLow = item->GetGUIDLow();
         AH->itemEntry = item->GetEntry();
@@ -294,12 +288,6 @@ void WorldSession::HandleAuctionSellItem(WorldPacket& recvData)
             SendAuctionCommandResult(0, AUCTION_SELL_ITEM, ERR_AUCTION_DATABASE_ERROR);
             delete AH;
             return;
-        }
-
-        if (HasPermission(rbac::RBAC_PERM_LOG_GM_TRADE))
-        {
-            sLog->outCommand(GetAccountId(), "GM %s (Account: %u) create auction: %s (Entry: %u Count: %u)",
-                GetPlayerName().c_str(), GetAccountId(), newItem->GetTemplate()->Name1.c_str(), newItem->GetEntry(), newItem->GetCount());
         }
 
         AH->Id = sObjectMgr->GenerateAuctionID();

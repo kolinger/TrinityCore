@@ -86,24 +86,7 @@ enum TrinityStrings
     LANG_CONNECTED_PLAYERS              = 60,
     LANG_ACCOUNT_ADDON                  = 61,
     LANG_IMPROPER_VALUE                 = 62,
-    LANG_RBAC_WRONG_PARAMETER_ID        = 63,
-    LANG_RBAC_WRONG_PARAMETER_REALM     = 64,
-    LANG_RBAC_LIST_HEADER_GRANTED       = 65,
-    LANG_RBAC_LIST_HEADER_DENIED        = 66,
-    LANG_RBAC_LIST_HEADER_BY_SEC_LEVEL  = 67,
-    LANG_RBAC_LIST_PERMISSIONS_HEADER   = 68,
-    LANG_RBAC_LIST_PERMS_LINKED_HEADER  = 69,
-    LANG_RBAC_LIST_EMPTY                = 70,
-    LANG_RBAC_LIST_ELEMENT              = 71,
-    LANG_RBAC_PERM_GRANTED_IN_LIST      = 72,
-    LANG_RBAC_PERM_GRANTED_IN_DENIED_LIST = 73,
-    LANG_RBAC_PERM_GRANTED              = 74,
-    LANG_RBAC_PERM_DENIED_IN_LIST       = 75,
-    LANG_RBAC_PERM_DENIED_IN_GRANTED_LIST = 76,
-    LANG_RBAC_PERM_DENIED               = 77,
-    LANG_RBAC_PERM_REVOKED              = 78,
-    LANG_RBAC_PERM_REVOKED_NOT_IN_LIST  = 79,
-    // Free 80 - 95
+    // Free 70 - 95
     
 
     LANG_GUILD_RENAME_ALREADY_EXISTS    = 96,
@@ -841,8 +824,7 @@ enum TrinityStrings
     LANG_COMMAND_EMAIL_OUTPUT           = 878,
     //                                  = 879, see LANG_PINFO_CHR_REGMAILS
     LANG_ACCOUNT_SEC_TYPE               = 880,
-    LANG_RBAC_EMAIL_REQUIRED            = 881,
-    // Room for in-game strings           882-999 not used
+    // Room for in-game strings           881-999 not used
 
     // Level 4 (CLI only commands)
     LANG_COMMAND_EXIT                   = 1000,

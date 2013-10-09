@@ -267,7 +267,7 @@ void World::AddSession_(WorldSession* s)
     if (decrease_session)
         --Sessions;
 
-    if (pLimit > 0 && Sessions >= pLimit && !s->HasPermission(rbac::RBAC_PERM_SKIP_QUEUE) && !HasRecentlyDisconnected(s))
+    if (pLimit > 0 && Sessions >= pLimit && !HasRecentlyDisconnected(s))
     {
         AddQueuedPlayer(s);
         UpdateMaxSessionCounters();
@@ -2148,7 +2148,7 @@ void World::SendGlobalGMMessage(WorldPacket* packet, WorldSession* self, uint32 
     {
         // check if session and can receive global GM Messages and its not self
         WorldSession* session = itr->second;
-        if (!session || session == self || !session->HasPermission(rbac::RBAC_PERM_RECEIVE_GLOBAL_GM_TEXTMESSAGE))
+        if (!session || session == self)
             continue;
 
         // Player should be in world
@@ -2250,7 +2250,7 @@ void World::SendGMText(int32 string_id, ...)
     {
         // Session should have permissions to receive global gm messages
         WorldSession* session = itr->second;
-        if (!session || !session->HasPermission(rbac::RBAC_PERM_RECEIVE_GLOBAL_GM_TEXTMESSAGE))
+        if (!session)
             continue;
 
         // Player should be in world

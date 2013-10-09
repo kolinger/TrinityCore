@@ -62,11 +62,6 @@ struct LfgRoleCheck;
 struct LfgUpdateData;
 }
 
-namespace rbac
-{
-class RBACData;
-}
-
 enum AccountDataType
 {
     GLOBAL_CONFIG_CACHE             = 0,                    // 0x01 g
@@ -221,11 +216,6 @@ class WorldSession
 
         void SendAuthResponse(uint8 code, bool shortForm, uint32 queuePos = 0);
         void SendClientCacheVersion(uint32 version);
-
-        rbac::RBACData* GetRBACData();
-        bool HasPermission(uint32 permissionId);
-        void LoadPermissions();
-        void InvalidateRBACData(); // Used to force LoadPermissions at next HasPermission check
 
         AccountTypes GetSecurity() const { return _security; }
         uint32 GetAccountId() const { return _accountId; }
@@ -1001,7 +991,6 @@ class WorldSession
         bool isRecruiter;
         ACE_Based::LockedQueue<WorldPacket*, ACE_Thread_Mutex> _recvQueue;
         time_t timeLastWhoCommand;
-        rbac::RBACData* _RBACData;
 };
 #endif
 /// @}
