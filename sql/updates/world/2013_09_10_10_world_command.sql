@@ -1,4 +1,4 @@
-/* cs_reload.cpp */
+/* cs_npc.cpp */
 
 SET @id = 607;
 
